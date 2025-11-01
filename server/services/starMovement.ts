@@ -27,36 +27,33 @@ export default class starMovementService {
     }
 
     orbitGalaxy(game: Game) {
-        for (let star of game.galaxy.stars) {
-            this.orbitStar(game, star);
-        }
-
-        for (let carrier of game.galaxy.carriers) {
-            this.orbitCarrier(game, carrier);
-        }
+        this.calculateNextLocations(game)
+        .forEach((nextLocation, objectWithLocation) => {
+            objectWithLocation.location = nextLocation
+        });
 
         for (let carrier of game.galaxy.carriers) {
             this.cullWaypointsService.cullWaypointsByHyperspaceRange(game, carrier);
         }
     }
 
-    orbitStar(game: Game, star: Star) {
-        this.orbitObject(game, star);
-    }
-
-    orbitCarrier(game: Game, carrier: Carrier) {
-        this.orbitObject(game, carrier);
-    }
-
-    orbitObject(game: Game, objectWithLocation: Star | Carrier) {
-        objectWithLocation.location = this.getNextLocation(game, objectWithLocation);
-    }
-
-    getNextLocation(game: Game, objectWithLocation: Star | Carrier) {
+    calculateNextLocations(game: Game, objects?: (Star | Carrier)[]): Map<Star | Carrier, Location> {
         if (game.settings.orbitalMechanics.enabled === 'disabled') {
             throw new Error('Game settings disallow orbital mechanics.');
         }
 
+        const newLocations = new Map<Star | Carrier, Location>();
+
+        const objectsToCalculate = objects || [...game.galaxy.stars, ...game.galaxy.carriers];
+
+        for (const object of objectsToCalculate) {
+            newLocations.set(object, this._getNextLocation(game, object));
+        }
+
+        return newLocations;
+    }
+
+    _getNextLocation(game: Game, objectWithLocation: Star | Carrier) {
         let galaxyCenter = game.constants.distances.galaxyCenterLocation!; // TODO: Refresh this constant(?) on rotation?
 
         let speed = game.settings.orbitalMechanics.orbitSpeed;
@@ -170,5 +167,4 @@ export default class starMovementService {
             carrier.location = star.location;
         }
     }
-    
 };
