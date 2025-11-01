@@ -1,5 +1,6 @@
 import {CarrierWaypointBase, ValidationError} from "solaris-common";
 import AvatarService from './avatar';
+import { Location } from './types/Location';
 import BattleRoyaleService from './battleRoyale';
 import CacheService from './cache';
 import CarrierService from './carrier';
@@ -216,8 +217,14 @@ export default class GameGalaxyService {
             this._setStarInfoBasic(game);
             this._clearPlayerCarriers(game);
         } else {
-            this._setCarrierInfoDetailed(game, viewpoint);
-            this._setStarInfoDetailed(game, userPlayer, viewpoint);
+            let nextLocations: Map<Star | Carrier, Location>;
+            try {
+                nextLocations = this.starMovementService.calculateNextLocations(game);
+            } catch {
+                nextLocations = new Map<Star | Carrier, Location>();
+            }
+            this._setCarrierInfoDetailed(game, viewpoint, nextLocations);
+            this._setStarInfoDetailed(game, userPlayer, viewpoint, nextLocations);
         }
 
         this._filterPlayerHomeStars(game);
@@ -374,7 +381,7 @@ export default class GameGalaxyService {
         });
     }
 
-    _setStarInfoDetailed(doc: Game, userPlayer: Player | null, viewpoint: Viewpoint) {
+    _setStarInfoDetailed(doc: Game, userPlayer: Player | null, viewpoint: Viewpoint, nextLocations: Map<Star | Carrier, Location>) {
         const isFinished = this.gameStateService.isFinished(doc);
         const isDarkStart = this.gameTypeService.isDarkStart(doc);
         const isDarkMode = this.gameTypeService.isDarkMode(doc);
@@ -425,7 +432,7 @@ export default class GameGalaxyService {
                 s.manufacturing = this.shipService.calculateStarManufacturing(doc, s);
 
                 if (isOrbital) {
-                    s.locationNext = this.starMovementService.getNextLocation(doc, s);
+                    s.locationNext = nextLocations.get(s) ?? null;
                 }
 
                 // If the star is dead then it has no infrastructure.
@@ -527,7 +534,7 @@ export default class GameGalaxyService {
             }) as any;
     }
 
-    _setCarrierInfoDetailed(doc: Game, viewpoint: Viewpoint) {
+    _setCarrierInfoDetailed(doc: Game, viewpoint: Viewpoint, nextLocations: Map<Star | Carrier, Location>) {
         const isFinished = this.gameStateService.isFinished(doc)
         const isOrbital = this.gameTypeService.isOrbitalMode(doc);
 
@@ -561,7 +568,7 @@ export default class GameGalaxyService {
                 }
 
                 if (isOrbital) {
-                    c.locationNext = this.starMovementService.getNextLocation(doc, c);
+                    c.locationNext = nextLocations.get(c) ?? null;
                 }
             });
     }
