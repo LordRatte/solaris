@@ -555,6 +555,16 @@ export const GAME_CREATION_OPTIONS = {
                 "value": 5,
                 "text": "Fast"
             }
+        ],
+        "simulationType": [
+            {
+                "value": "basic",
+                "text": "Simple Orbit"
+            },
+            {
+                "value": "newtonian",
+                "text": "Newtonian (Beta)"
+            }
         ]
     },
     "player": {

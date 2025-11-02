@@ -115,7 +115,8 @@ const schema = new Schema({
 		},
 		orbitalMechanics: {
 			enabled: { type: Types.String, required: true, enum: ['disabled', 'enabled'], default: 'disabled' },
-			orbitSpeed: { type: Types.Number, required: false, min: 1, max: 5, default: 3 }
+			orbitSpeed: { type: Types.Number, required: false, min: 1, max: 5, default: 3 },
+            simulationType: { type: Types.String, required: false, enum: ['basic', 'newtonian'], default: 'basic' }
 		},
         player: {
 			startingStars: { type: Types.Number, required: true, min: 1, max: 30, default: 6 },

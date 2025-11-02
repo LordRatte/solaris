@@ -65,7 +65,8 @@
     },
     "orbitalMechanics": {
         "enabled": "disabled",
-        "orbitSpeed": 3
+        "orbitSpeed": 3,
+  "simulationType": "basic"
     },
     "player": {
         "startingStars": 3,
