@@ -552,9 +552,18 @@
         <p class="mb-1 text-warning" v-if="settings.orbitalMechanics.enabled === 'enabled'">Warning: carrier-to-carrier combat is auto-disabled in orbital games.</p>
 
         <div class="mb-2">
-          <label for="orbitalMechanicsEnabled" class="col-form-label">Galaxy Rotation <help-tooltip tooltip="If enabled, orbits stars and carriers around the center of the galaxy every tick"/></label>
+          <label for="orbitalMechanicsEnabled" class="col-form-label">Simulated Motion <help-tooltip tooltip="If enabled, stars and carriers will change position according to certain rules"/></label>
           <select class="form-control" id="orbitalMechanicsEnabled" v-model="settings.orbitalMechanics.enabled" :disabled="isCreatingGame">
             <option v-for="opt in options.orbitalMechanics.enabled" v-bind:key="opt.value" v-bind:value="opt.value">
+              {{ opt.text }}
+            </option>
+          </select>
+        </div>
+
+        <div class="mb-2" v-if="settings.orbitalMechanics.enabled === 'enabled'">
+          <label for="simulationType" class="col-form-label">Simulation Type <help-tooltip tooltip="Which system should be used to determine the motion"/></label>
+          <select class="form-control" id="simulationType" v-model="settings.orbitalMechanics.simulationType" :disabled="isCreatingGame">
+            <option v-for="opt in options.orbitalMechanics.simulationType" v-bind:key="opt.value" v-bind:value="opt.value">
               {{ opt.text }}
             </option>
           </select>

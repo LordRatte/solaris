@@ -42,6 +42,7 @@ import {
     GameGalaxyType,
     GameInfrastructureCost,
     GameMode,
+    GameOrbitalMechanicsSimulationType,
     GamePlayerAnonymity,
     GamePlayerDistribution,
     GamePlayerOnlineStatus,
@@ -415,6 +416,7 @@ export const parseGameSettingsReq: Validator<GameSettingsReq> = object({
                 to: 5,
             },
         }),
+        simulationType: stringEnumeration<GameOrbitalMechanicsSimulationType, GameOrbitalMechanicsSimulationType[]>(['basic', 'newtonian']),
     }),
     player: parseGameSettingsPlayer,
     diplomacy: object({

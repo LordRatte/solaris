@@ -292,11 +292,16 @@
       <div class="table-responsive">
         <table class="table table-striped table-hover">
           <tbody>
-            <game-setting-value title="Galaxy Rotation"
-              tooltip="If enabled, orbits stars and carriers around the center of the galaxy every tick"
+            <game-setting-value title="Simulated Motion"
+              tooltip="If enabled, stars and carriers will change position according to certain rules"
               :valueText="getFriendlyText(game.settings.orbitalMechanics.enabled)"
               :value="game.settings.orbitalMechanics.enabled"
               :compareValue="compareSettings.orbitalMechanics.enabled" />
+            <game-setting-value title="Simulation Type"
+              tooltip="Which system should be used to determine the motion"
+              :valueText="getFriendlyText(game.settings.orbitalMechanics.simulationType)"
+              :value="game.settings.orbitalMechanics.simulationType"
+              :compareValue="compareSettings.orbitalMechanics.simulationType" />
             <game-setting-value title="Orbit Speed" tooltip="Determines how fast stars and carriers orbit"
               :valueText="game.settings.orbitalMechanics.orbitSpeed" :value="game.settings.orbitalMechanics.orbitSpeed"
               :compareValue="compareSettings.orbitalMechanics.orbitSpeed"

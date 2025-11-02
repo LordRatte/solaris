@@ -45,6 +45,7 @@ export type GamePlayerType = 'all'|'establishedPlayers';
 export type GamePlayerAnonymity = 'normal'|'extra';
 export type GamePlayerOnlineStatus = 'hidden'|'visible';
 export type GameSettingEnabledDisabled = 'disabled'|'enabled';
+export type GameOrbitalMechanicsSimulationType = 'basic' | 'newtonian';
 
 export const GAME_AWARD_RANK_TO = [
     'all',
@@ -441,6 +442,7 @@ export type GameSettingsInvariable = {
     orbitalMechanics: {
         enabled: GameSettingEnabledDisabled;
         orbitSpeed: number;
+        simulationType: GameOrbitalMechanicsSimulationType;
     },
     player: GameSettingsPlayer;
     diplomacy: {
