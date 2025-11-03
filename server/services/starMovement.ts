@@ -70,7 +70,7 @@ export default class starMovementService {
         let galaxyCenterLocation = game.constants.distances.galaxyCenterLocation!;
         gravitationalObjects.push({
             location: galaxyCenterLocation
-        });
+        } as Partial<Star> as Star);
 
         let acceleration = game.settings.orbitalMechanics.orbitSpeed * G;
 
