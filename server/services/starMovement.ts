@@ -8,6 +8,8 @@ import SpecialistService from "./specialist";
 import { WaypointService } from 'solaris-common';
 import CullWaypointsService from "./cullWaypoints";
 
+const G = 1000;
+
 export default class starMovementService {
     mapService: MapService;
     starDistanceService: StarDistanceService;
@@ -28,32 +30,95 @@ export default class starMovementService {
 
     orbitGalaxy(game: Game) {
         this.calculateNextLocations(game)
-        .forEach((nextLocation, objectWithLocation) => {
-            objectWithLocation.location = nextLocation
-        });
+            .forEach((nextLocation, objectWithLocation) => {
+                objectWithLocation.location = nextLocation;
+            });
+
+        this.maintainDistance(game, game.galaxy.stars, game.galaxy.stars);
 
         for (let carrier of game.galaxy.carriers) {
             this.cullWaypointsService.cullWaypointsByHyperspaceRange(game, carrier);
         }
     }
 
+
     calculateNextLocations(game: Game, objects?: (Star | Carrier)[]): Map<Star | Carrier, Location> {
         if (game.settings.orbitalMechanics.enabled === 'disabled') {
             throw new Error('Game settings disallow orbital mechanics.');
         }
 
-        const newLocations = new Map<Star | Carrier, Location>();
+        let newLocations = new Map<Star | Carrier, Location>();
 
-        const objectsToCalculate = objects || [...game.galaxy.stars, ...game.galaxy.carriers];
+        const objectsToCalculate = objects || game.galaxy.stars;
 
-        for (const object of objectsToCalculate) {
-            newLocations.set(object, this._getNextLocation(game, object));
+        if (game.settings.orbitalMechanics.simulationType === 'newtonian') {
+            newLocations = this._caclulateNewtonianNextLocation(game, objectsToCalculate);
+        } else {
+            for (const object of objectsToCalculate) {
+                newLocations.set(object, this._caclulateBasicNextLocation(game, object));
+            }
         }
 
         return newLocations;
     }
 
-    _getNextLocation(game: Game, objectWithLocation: Star | Carrier) {
+    _caclulateNewtonianNextLocation(game: Game, dynamicObjects: (Star | Carrier)[]): Map<Star | Carrier, Location> {
+        const newLocations = new Map<Star | Carrier, Location>();
+        const gravitationalObjects = [...game.galaxy.stars];
+
+        // Nudge stars to be around the galaxy center
+        let galaxyCenterLocation = game.constants.distances.galaxyCenterLocation!;
+        gravitationalObjects.push({
+            location: galaxyCenterLocation
+        } as Partial<Star> as Star);
+
+        let acceleration = game.settings.orbitalMechanics.orbitSpeed * G;
+
+        for (const dynamicObject of dynamicObjects) {
+
+            let ax = 0;
+            let ay = 0;
+
+            for (const gravitationalObject of gravitationalObjects) {
+                if (dynamicObject === gravitationalObject) continue;
+
+                const dx = gravitationalObject.location.x - dynamicObject.location.x;
+                const dy = gravitationalObject.location.y - dynamicObject.location.y;
+                const distSq = Math.abs(dx * dx + dy * dy);
+                const dist = Math.sqrt(distSq) || 1e-6;
+
+                // F = G * m1 * m2 / r^2
+                const force = acceleration / distSq;
+
+                // Normalize direction and apply
+                ax += force * (dx / dist);
+                ay += force * (dy / dist);
+            }
+
+
+            const velocity = dynamicObject.location.velocity ?? { x: 0, y: 0 };
+            if (!dynamicObject.location.velocity) {
+                const initialOrbitTarget = this._caclulateBasicNextLocation(game, dynamicObject);
+                velocity.x = initialOrbitTarget.x - dynamicObject.location.x;
+                velocity.y = initialOrbitTarget.y - dynamicObject.location.y;
+            }
+
+            velocity.x += ax;
+            velocity.y += ay;
+
+            const nextLocation: Location = {
+                x: dynamicObject.location.x + velocity.x,
+                y: dynamicObject.location.y + velocity.y,
+                velocity: velocity
+            };
+
+            newLocations.set(dynamicObject, nextLocation);
+        }
+
+        return newLocations;
+    }
+
+    _caclulateBasicNextLocation(game: Game, objectWithLocation: Star | Carrier) {
         let galaxyCenter = game.constants.distances.galaxyCenterLocation!; // TODO: Refresh this constant(?) on rotation?
 
         let speed = game.settings.orbitalMechanics.orbitSpeed;
@@ -72,6 +137,7 @@ export default class starMovementService {
             galaxyCenter.x, galaxyCenter.y,
             objectWithLocation.location.x, objectWithLocation.location.y, 
             arcLength);
+    
     }
 
     rotate(cx: number, cy: number, x: number, y: number, angle: number): Location {

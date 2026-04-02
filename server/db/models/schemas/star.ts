@@ -34,7 +34,14 @@ const schema = new Schema({
     },
     location: {
         x: { type: Types.Number, required: true, default: 0 },
-        y: { type: Types.Number, required: true, default: 0 }
+        y: { type: Types.Number, required: true, default: 0 },
+        velocity: {
+            type: {
+                x: { type: Types.Number, default: 0 },
+                y: { type: Types.Number, default: 0 },
+            },
+            required: false,
+        },
     }
 });
 
